@@ -32,6 +32,7 @@ class OpensslAT10 < Formula
       no-ssl3
       no-zlib
       shared
+      linux-x86_64
       enable-cms
       enable-ec_nistp_64_gcc_128
     ]
