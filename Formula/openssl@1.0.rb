@@ -23,7 +23,12 @@ class OpensslAT10 < Formula
     # along with perl modules in PERL5LIB.
     ENV.delete("PERL")
     ENV.delete("PERL5LIB")
-
+    case RUBY_PLATFORM
+    when /x86_64-linux/
+      build_target="linux-x86_64"
+    when /x86_64-darwin/
+      build_target="darwin64-x86_64-cc"
+    end
     ENV.deparallelize
     args = %W[
       --prefix=#{prefix}
@@ -32,8 +37,8 @@ class OpensslAT10 < Formula
       no-ssl3
       no-zlib
       shared
-      linux-x86_64
       enable-cms
+      #{build_target}
       enable-ec_nistp_64_gcc_128
     ]
     system "perl", "./Configure", *args
