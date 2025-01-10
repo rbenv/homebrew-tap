@@ -30,6 +30,15 @@ class OpensslAT10 < Formula
       ENV.O1 if ENV.compiler == :clang
     end
 
+    arch_args = []
+    if OS.mac?
+      arch_args += %W[darwin64-#{Hardware::CPU.arch}-cc enable-ec_nistp_64_gcc_128]
+    elsif Hardware::CPU.intel?
+      arch_args << (Hardware::CPU.is_64_bit? ? "linux-x86_64" : "linux-elf")
+    elsif Hardware::CPU.arm?
+      arch_args << (Hardware::CPU.is_64_bit? ? "linux-aarch64" : "linux-armv4")
+    end
+
     ENV.deparallelize
     args = %W[
       --prefix=#{prefix}
@@ -39,10 +48,8 @@ class OpensslAT10 < Formula
       no-zlib
       shared
       enable-cms
-      darwin64-#{Hardware::CPU.arch}-cc
-      enable-ec_nistp_64_gcc_128
     ]
-    system "perl", "./Configure", *args
+    system "perl", "./Configure", *(args + arch_args)
     system "make", "depend"
     system "make"
     # The make_ec step fails on arm64 macOS, so let's skip the test phase
