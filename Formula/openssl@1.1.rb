@@ -12,6 +12,7 @@ class OpensslAT11 < Formula
   version_scheme 1
 
   bottle do
+    root_url "https://ghcr.io/v2/rbenv/tap"
     rebuild 1
     sha256 arm64_sequoia: "72c82547363b360620ffdb34857f1682100885c2b2431d455fa1d1edebe124d5"
   end
