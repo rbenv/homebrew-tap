@@ -6,6 +6,11 @@ class OpensslAT10 < Formula
   mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.0.2u.tar.gz"
   sha256 "ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16"
 
+  bottle do
+    rebuild 1
+    sha256 arm64_sequoia: "61cdee4c9e1ab293123e3a885d08279491eeedd73f8b614c531982f42d93e196"
+  end
+
   keg_only :provided_by_macos,
     "Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries"
 
