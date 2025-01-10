@@ -11,6 +11,11 @@ class OpensslAT11 < Formula
   license "OpenSSL"
   version_scheme 1
 
+  bottle do
+    rebuild 1
+    sha256 arm64_sequoia: "72c82547363b360620ffdb34857f1682100885c2b2431d455fa1d1edebe124d5"
+  end
+
   keg_only :versioned_formula
 
   depends_on "ca-certificates"
