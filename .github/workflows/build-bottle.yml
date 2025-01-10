@@ -1,0 +1,129 @@
+name: Build Homebrew bottle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [build-bottle]
+
+env:
+  HOMEBREW_DEVELOPER: 1
+  HOMEBREW_GITHUB_ACTIONS: 1
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_FROM_API: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+  BOTTLE_ROOT_URL: https://ghcr.io/v2/rbenv/tap
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
+# concurrency: bottle-${{ github.event.inputs.formula }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        formula: [openssl@1.0, openssl@1.1]
+        os: [macos-13, macos-14, macos-15]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+        with:
+          core: false
+          cask: false
+          test-bot: false
+
+      - name: Cache Homebrew Bundler RubyGems
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
+
+      - name: Install Homebrew Bundler RubyGems
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: brew install-bundler-gems
+
+      - name: Uninstall existing formula
+        run: brew uninstall --force --ignore-dependencies --formula "$FORMULA_NAME"
+        env:
+          FORMULA_NAME: ${{ matrix.formula }}
+
+      - name: Install formula
+        run: brew install --build-bottle "$FORMULA_NAME"
+        env:
+          FORMULA_NAME: rbenv/tap/${{ matrix.formula }}
+          HOMEBREW_NO_ENV_HINTS: 1
+
+      - name: Build bottle
+        run: brew bottle --json "$FORMULA_NAME" --root-url "$BOTTLE_ROOT_URL" --keep-old
+        env:
+          FORMULA_NAME: rbenv/tap/${{ matrix.formula }}
+      
+      - run: ls -l
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottle_${{ matrix.formula }}_${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            *.bottle.*.tar.gz
+            *.bottle.json
+
+  upload:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+        with:
+          core: false
+          cask: false
+          test-bot: false
+
+      - name: Cache Homebrew Bundler RubyGems
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
+
+      - name: Install Homebrew Bundler RubyGems
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: brew install-bundler-gems
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Upload bottles
+        run: brew pr-upload --root-url "$BOTTLE_ROOT_URL" --warn-on-upload-failure
+        env:
+          HOMEBREW_GIT_NAME: Mislav Marohnić
+          HOMEBREW_GIT_EMAIL: git@mislav.net
+          HOMEBREW_GITHUB_PACKAGES_USER: mislav
+          HOMEBREW_GITHUB_PACKAGES_TOKEN: ${{ secrets.BOTTLE_UPLOAD_TOKEN }}
+
+      - name: Push formula changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git switch -c bottles-"$(date "+%s")"
+          git push -u origin HEAD
+          gh pr create --title "Update bottles" --head "$(git branch --show-current)"
