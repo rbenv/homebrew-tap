@@ -11,6 +11,8 @@ class OpensslAT11 < Formula
   license "OpenSSL"
   version_scheme 1
 
+  pour_bottle? only_if: :default_prefix
+
   bottle do
     root_url "https://ghcr.io/v2/rbenv/tap"
     rebuild 1

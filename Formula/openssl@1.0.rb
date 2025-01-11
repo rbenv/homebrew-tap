@@ -6,6 +6,8 @@ class OpensslAT10 < Formula
   mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.0.2u.tar.gz"
   sha256 "ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16"
 
+  pour_bottle? only_if: :default_prefix
+
   bottle do
     root_url "https://ghcr.io/v2/rbenv/tap"
     rebuild 1
