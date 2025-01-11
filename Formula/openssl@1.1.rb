@@ -16,9 +16,9 @@ class OpensslAT11 < Formula
   bottle do
     root_url "https://ghcr.io/v2/rbenv/tap"
     rebuild 1
-    sha256 arm64_sequoia: "b50fa064fcbaaba0e409516ff0856baa5ecede547870a4fbffd0a892a25da177"
-    sha256 arm64_sonoma:  "df6e2e88146e496ad304a04730dd23b89e9e2ed197804452cebd52d83f2cac84"
-    sha256 ventura:       "eb5c26b540c5a5543edd3557d1628ce03f03e6c5ac1b219be9b34e436b10ba64"
+    sha256 arm64_sequoia: "b87448be45342d311fa745d7993b133a194108bffb6565b7b182d87f7dd800b3"
+    sha256 arm64_sonoma:  "4f6f6598cfb2da301661798649cfcf710c10af53c8e2c78d2596e632a9b67d68"
+    sha256 ventura:       "2f5ee1fcf6c9b9ac98d3088acaf397ac041e648a17e98b1ef052626975dfad2c"
   end
 
   keg_only :versioned_formula
